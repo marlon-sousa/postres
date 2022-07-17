@@ -16,7 +16,9 @@ pub fn get_subscriber(
         .finish()
 }
 
-pub fn init_subscriber(subscriber: impl Subscriber + Send + Sync) {
+pub fn init_subscriber(
+    subscriber: impl Subscriber + Send + Sync,
+) -> Result<(), tracing::dispatcher::SetGlobalDefaultError> {
     LogTracer::init().expect("Failed to init logging sub systems");
-    set_global_default(subscriber);
+    set_global_default(subscriber)
 }
