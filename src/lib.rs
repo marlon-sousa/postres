@@ -1,3 +1,7 @@
+mod logging;
+
+pub fn log() {}
+
 #[cfg(test)]
 mod tests {
     #[test]
