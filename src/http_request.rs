@@ -17,6 +17,11 @@ impl HttpRequest {
     }
 }
 
+pub struct Header {
+    pub name: String,
+    pub value: String,
+}
+
 /*
     see 010
 */
