@@ -41,8 +41,9 @@ mod config;
 mod error;
 mod http_request;
 mod logging;
+mod postman;
 
-use config::Config;
+pub use config::Config;
 
 /*
     def 006
@@ -76,6 +77,9 @@ pub fn postman_to_http(
 
 /// loads an input file with a PostmanCollection and records oon disk the converted file with a http collection, understandable by RestClient
 pub fn postman_file_to_http_file(config: Config) -> Result<(), PostresError> {
+    let postman_collection = postman::load_from_path(&config.source_file)?;
+    postman::log_collection_information(&postman_collection);
+    let http_requests = postman_to_http(postman_collection)?;
     Ok(())
 }
 
