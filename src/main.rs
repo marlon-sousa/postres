@@ -32,25 +32,25 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
     /*
-      def 002
-      Let's talk a little about printing:
-      Printing is cool, is an easy way of debugging and communicating.
-      But printing is also synchronous. What does it mean?
-      It means that every time you call println!() or stuff alike, in the vast majority of situations, your thread has to stop, ackire a lock (which will happen only when no other thread owns it), print and them release the lock.
-      While other threads have the lock, your thread is waiting, doing nothing.
-      While your thread has the lock, other threads needing the lock are awaiting, doing nothing.
-      If you think this has a potential to slow down hardly a software which has threads which print you are right.
-      Now, consider that the way must software running on containers use to log is ... printing to stdout, and that logging is a must to any production tailored software.
-      Right, we have a problem. But the problem lies in these strange people who made printing synchronous. Why does it have to be synchronous? Let's make it asynchronous, or at least let's make it not rely on any locks at all!
-      Well, if we made prints not rely on locks, every threads printing would place characters in the buffer in the order they are produced.
-      If a thread was printing hello world, it could by paused by the operating system right after printing l, and the next thread the operating system resumed could start printing "what a beautful world"
-      After our thread is resumed, it would print "lo world". The reader (the poor human trying to analyse logs) would then read a ,mangled thing, like "helwhat a wounderful worldlo world". Fun, but not effective.
-      Right, we have to depend on locks. Now what? Are we going to wast that many processor cores we have only because we need logging? Unacceptable! Let's not log at all!
-      Ooops, calm down. We still need logs, and there are ways around it.
-      Suppose we want to print lots of logs. Why don't we put them in a buffer and them let a specific thread assigned to print that buffer to stdout?
-      Threads pushing to the buffer wouldn't need to wait for any locks. In the other hand, the thread responsible for printing would need to wait on locks, but it would not slow down the threads that need to print stuff. These will just place messages in the buffer and following their normal operation.
-      It turns out that this is exactly what the logging subsystem does here.
-      You will need to read documentation to better understand how this all works, but at least you have the highl level concept of what is going on.
+        def 002
+        Let's talk a little about printing:
+        Printing is cool, is an easy way of debugging and communicating.
+        But printing is also synchronous. What does it mean?
+        It means that every time you call println!() or stuff alike, in the vast majority of situations, your thread has to stop, ackire a lock (which will happen only when no other thread owns it), print and them release the lock.
+        While other threads have the lock, your thread is waiting, doing nothing.
+        While your thread has the lock, other threads needing the lock are awaiting, doing nothing.
+        If you think this has a potential to slow down hardly a software which has threads which print you are right.
+        Now, consider that the way must software running on containers use to log is ... printing to stdout, and that logging is a must to any production tailored software.
+        Right, we have a problem. But the problem lies in these strange people who made printing synchronous. Why does it have to be synchronous? Let's make it asynchronous, or at least let's make it not rely on any locks at all!
+        Well, if we made prints not rely on locks, every threads printing would place characters in the buffer in the order they are produced.
+        If a thread was printing hello world, it could by paused by the operating system right after printing l, and the next thread the operating system resumed could start printing "what a beautful world"
+        After our thread is resumed, it would print "lo world". The reader (the poor human trying to analyse logs) would then read a ,mangled thing, like "helwhat a wounderful worldlo world". Fun, but not effective.
+        Right, we have to depend on locks. Now what? Are we going to wast that many processor cores we have only because we need logging? Unacceptable! Let's not log at all!
+        Ooops, calm down. We still need logs, and there are ways around it.
+        Suppose we want to print lots of logs. Why don't we put them in a buffer and them let a specific thread assigned to print that buffer to stdout?
+        Threads pushing to the buffer wouldn't need to wait for any locks. In the other hand, the thread responsible for printing would need to wait on locks, but it would not slow down the threads that need to print stuff. These will just place messages in the buffer and following their normal operation.
+        It turns out that this is exactly what the logging subsystem does here.
+        You will need to read documentation to better understand how this all works, but at least you have the high level concept of what is going on.
     */
     let (non_blocking_writer, _guard) = tracing_appender::non_blocking(std::io::stdout());
     let subscriber = logging::get_subscriber(APP_NAME, "info", non_blocking_writer);
