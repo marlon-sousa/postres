@@ -3,6 +3,7 @@ use clap::Parser;
 use fancy_regex::Regex;
 use lazy_static::lazy_static;
 use tracing::info;
+use url::Url;
 
 mod error;
 mod logging;
@@ -76,16 +77,16 @@ impl From<Args> for Config {
             Some(o) => o,
             None => {
                 /*
-                      def 004
-                      if output is not provided (it is None), we will replace the file extension from the input file from json to http and use this as an reasonable default
-                      We however have a problem: if the source file contains one or more .json part on its content, we want only the last one to be replaced by .http
-                      this is not an easy task in rust: manipulating strings is not something easy at all, so we will use regex.
-                      It so happens that replacing only the last occurrence of a matched text is also not something easily done in rust
-                      in order to achieve that, we will need to use a regex feature called look ahead.
-                      The idea is simple: we want to capture some text only if we know that no more occurrences of that same text can be matched to the right of the original text
-                      This way, only the last .json is matched.
-                      It so happens that Regex, the di-facto rust Standard crate for regex does not support look ahead.
-                      Because of that, we will use another well maintaied crate called, well, fancy_regex
+                    def 004
+                    if output is not provided (it is None), we will replace the file extension from the input file from json to http and use this as an reasonable default
+                    We however have a problem: if the source file contains one or more .json part on its content, we want only the last one to be replaced by .http
+                    this is not an easy task in rust: manipulating strings is not something easy at all, so we will use regex.
+                    It so happens that replacing only the last occurrence of a matched text is also not something easily done in rust
+                    in order to achieve that, we will need to use a regex feature called look ahead.
+                    The idea is simple: we want to capture some text only if we know that no more occurrences of that same text can be matched to the right of the original text
+                    This way, only the last .json is matched.
+                    It so happens that Regex, the di-facto rust Standard crate for regex does not support look ahead.
+                    Because of that, we will use another well maintaied crate called, well, fancy_regex
                 */
                 lazy_static! {
                     /*

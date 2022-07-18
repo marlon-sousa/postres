@@ -1,7 +1,10 @@
+use derive_builder::UninitializedFieldError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum PostresError {
+    #[error(transparent)]
+    FieldInitializationError(#[from] UninitializedFieldError),
     #[error("Logging setup error")]
     LoggingSetupError(#[from] tracing::dispatcher::SetGlobalDefaultError),
     #[error("Postman collection parser error. Caused by {msg}")]

@@ -144,13 +144,19 @@ fn convert_request_or_folder(
     item: &v2_1_0::Items,
 ) -> Vec<Result<http_request::HttpRequest, PostresError>> {
     let name = make_base_name(basename, item.name.as_ref().unwrap());
-
-    if is_leaf_request(item) {
+    if is_request(item) {
         // convert request and return a vec with it
-        return vec![to_http_request(&name, item)];
+        return vec![convert_request(&name, item)];
     }
     // process recursively the list of requests
-    item.item
+    convert_folder(&name, &item.item)
+}
+
+fn convert_folder(
+    name: &str,
+    items: &Option<Vec<v2_1_0::Items>>,
+) -> Vec<Result<http_request::HttpRequest, PostresError>> {
+    items
         .as_ref()
         .unwrap()
         .iter()
@@ -158,7 +164,7 @@ fn convert_request_or_folder(
         .collect()
 }
 
-fn to_http_request(
+fn convert_request(
     name: &str,
     item: &v2_1_0::Items,
 ) -> Result<http_request::HttpRequest, PostresError> {
@@ -166,10 +172,21 @@ fn to_http_request(
         .request
         .as_ref()
         .ok_or_else(|| PostresError::postman_request_not_found(""))?;
-    Ok(http_request::HttpRequest {
-        //         headers: vec![],
-        name: name.to_string(),
-    })
+    match postman_request {
+        v2_1_0::RequestUnion::RequestClass(_) => todo!(),
+        v2_1_0::RequestUnion::String(r) => http_request_from_string(&name, &r),
+    }
+}
+
+fn http_request_from_string(
+    name: &str,
+    req: &str,
+) -> Result<http_request::HttpRequest, PostresError> {
+    Ok(http_request::HttpRequestBuilder::default()
+        .name(name.to_string())
+        .method(http_request::Method::Get)
+        .url(req)
+        .build()?)
 }
 
 fn to_http_headers(postman_headers: Option<&Vec<v2_1_0::Header>>) -> Vec<http_request::Header> {
@@ -184,11 +201,54 @@ fn to_http_headers(postman_headers: Option<&Vec<v2_1_0::Header>>) -> Vec<http_re
         .collect()
 }
 
-fn is_leaf_request(item: &v2_1_0::Items) -> bool {
+fn is_request(item: &v2_1_0::Items) -> bool {
     // An object called items (plural) can perfectly signify a request (not a folder).
     // If it is a request, it iis a leaf in reqests tree
     if let None = item.item {
         return true;
     }
     matches!(item.item.as_ref(), Some(i) if i.is_empty())
+}
+
+/*
+    see 010
+*/
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn should_convertrequest_from_string() {
+        let converted = http_request_from_string("testReq", "http://127.0.0.1:3000/a/b").unwrap();
+        assert_eq!(
+            converted,
+            http_request::HttpRequestBuilder::default()
+                .method(http_request::Method::Get)
+                .name("testReq")
+                .url("http://127.0.0.1:3000/a/b")
+                .build()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn should_convert_request_from_string_handling_query_parameters() {
+        let converted =
+            http_request_from_string("testReq", "http://127.0.0.1:3000/a/b?aaa=111&bbb=222")
+                .unwrap();
+        assert_eq!(
+            converted,
+            http_request::HttpRequestBuilder::default()
+                .method(http_request::Method::Get)
+                .name("testReq")
+                .query_params(vec![
+                    http_request::QueryParam::new("aaa", "111"),
+                    http_request::QueryParam::new("bbb", "222"),
+                ])
+                .url("http://127.0.0.1:3000/a/b")
+                .build()
+                .unwrap()
+        );
+    }
 }
