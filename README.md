@@ -93,7 +93,7 @@ If you're using Windows, you will need to install some developer base libraries,
 Regardless of your operating system, access [rustup.rs](https://rustup.rs/) and follow the instructions. The process is kit authomated and easy, way easier than what other low level languages usually require.
 Once rust is installed, clone this project. Then change dir to the folder where it has been cloned and perform a cargo check to make sure your rust setup is working.
 
-We strongly suggest the use of [VS Code)(code.visualstudio.com) as your base editor.
+We strongly suggest the use of [VS Code](https://code.visualstudio.com) as your base editor.
 If you're going this route, install the [rust-analyzer extension](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
 
 ## Contributing
