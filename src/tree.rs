@@ -35,10 +35,10 @@ use std::{
 
     Our programmer doesn't have to know math, they only need to know what a multiplication is (not how it is achieved) and use it appropriately.
 
-    This might appears to be a very obvious thing, but we tend to forget what abstractions are. We also tend to forget that every time something "just works", it is in reality using lots of abstractions behind the cenes.
+    This might appear to be a very obvious thing, but we tend to forget what abstractions are. We also tend to forget that every time something "just works", it is in reality using lots of abstractions behind the cenes.
 
     Again, this reflects reality, as is the case with almost all things in computing: when you go to a restaurant and order a spaghetti, you don't know how that meal is being prepared. Is it pre cooked? Are the spaghettis hand made by the restaurant or bought from soneone else?
-    How many time are them being cooked? For how many cookers?
+    How much time are them being cooked? By how many cookers?
     These are questions that should interest cookers or people wanting to become a chief, but most part of people just want to enjoy a dinner.
     Notice, though, that there might be super qualified chieves who know everything about how to prepare a good spaghetti. They might even produce their spaghettis manually, because a more abstract way (which would be buying them from someone else) might not render the quality or characteristics they want.
     These super qualified chieves use, therefore, water and wheat floor. But, if you ask them, few will know exactly where the wheat they use comes from, how to grow wheat, how to prepare wheat floor.
@@ -60,6 +60,9 @@ use std::{
     We already said this, but here it goes again: Rust, being as low level as C is, offers a way more safe alternative for writting code, the high level code we are writting here as well as the lower level code being written by so many other programmers.
     If you're using a C based language, the low level functionality you're using written in C is exposed to all the risks any software written in that language is also exposed, even using a higher level language.
     If you're using high level rust which uses lower level rust as functionality provider, chances are tat your code and the code you are using are all safer.
+
+
+    All blocks in this project may be read out of order. This module however, is different. If you are reading things on this module, or file, please make sure to read it top down, in order to gain understanding of what is going on in a way which will make sense.
 */
 
 /*
@@ -95,7 +98,7 @@ use std::{
 
     Trees are structures very good for grouping data in a given order and for applying or finding elements from a given start point.
 
-    There are other structures, such as lists and maps, all of them with a very main challenge: computers know nothing about structures. Trees, lists or maps have no special meaning for computers.
+    There are other structures, such as lists and maps, all of them with a very main development challenge: computers know nothing about structures. Trees, lists or maps have no special meaning for computers.
 
     But, at the other hand, these are very important representations for programmers, because they can be used to represent any kind of thing.
 
@@ -151,7 +154,7 @@ pub(crate) struct Node<T> {
 
     Exactly! And its name should give us a hint of what it is used for: this is a inner data, of a lower level than what we wanted to expose to our users!
 
-    Now, if you read the implementation, you will notice that each method here manipulates this inner data in a strange way, delegating calls to whatever this inner data has and doing several other things that would appear strange for must high level programmers.
+    Now, if you read the implementation, you will notice that each method here manipulates this inner data in a strange way, delegating calls to whatever this inner data has and doing several other things that would appear strange for most high level programmers.
 
     And this is how we provide an abstraction level. To have an idea about how we use our Node structure, take a look at the tests at the end of this module.
 */
@@ -243,25 +246,27 @@ pub(crate) struct Node<T> {
 
     because the operating system gave you access to some memory, this access will be granted until you explicitely tell the operating system that you no longer need that memory.
     On stack, we know exactly when to cleanup state: when the function returns, all the memory it used is cleaned. But, at run-time, the operating system cannot understand your program specific logic.
-    Neiter can it nor should it, because the operating system needs to be agnostic about what programs are running.
+    Neiter can it nor should it, because the operating system needs to be agnostic about what programs are doing, as long as security rules and resource management are not an issue.
     What happens when a function which created a pointer returns? Well, the pointer the function created is destroied, because this pointer is om stack, and the stack is cleaned when the function returns.
     Now, we lost the address of that memory the system allocated to us in the heap. The only variable holding that address was cleaned up. We cannot reclaim that memory because we don't know the address any more. The operating system, in the other hand, will keep that memory reserved, because it has no way of knowing we are not using it.
     Congratulations, you got your first memory leak!
     Suppose you have forgoten to dispose some memory that a function called on a loop. No problems, you run your program quickly and nothing wrong happens. Then, you send it to production.
-    In production, your program runs without exiting for several days, and runs the loop which call the function that allocated memory in the heap some times a day.
-    After some days, memory consume on the server is high enough that it crashes. Nobody knows why, it might be a problem in the operating system, a virus, an electrical problem .. Then, what to do?
+    In production, your program runs without exiting for several days, and runs the loop which call the function that allocates memory in the heap some times a day.
+    After some days, memory consume on the server is high enough that it crashes. Nobody knows why, it might be a problem in the operating system, a virus, an electrical problem ... but, in reallity, the problem is your program is leaking memory by continuously asking the operating system for more dynamic memory and never disposing that memory.
+
     The other way around is also a problem: Suppose you allocate some memory in the heap and pass the resulting pointer to three functions, each one responsible for doing some activity.
     You can perfectly pass a pointer as parameter to another function.
     All functions alter the data pointed by the pointer.
     After the third function returns, you read the data which should now be processed by the three functions.
     All well and good. After using the data, you let the operating system know that you no longer need that memory, so that you don't have a leak when your pointer goes away when you return.
     Then, one day, someone alters the third function your function calls. The programmer decides to optimize processing and, deppending on a if statement, request the operating system to clear that memory earlier, because it is evident that nobody will need that data anymore.
-    As it is obvious, the programmer has forgoten to ask you if it would be ok to cleanup that memory inside that function. May be the programmer doesn't even know you, because we many times don't know the callers of functions we write.
+    As it is obvious, the programmer has forgoten to ask you if it would be ok to clean that memory inside that function. May be the programmer doesn't even know you, because we many times don't know the callers of functions we write.
     Anyways, you keep calling that function and nothing happens, because the if statement on that function, given the other parameters you pass, never becomes true.
     But, one day, you change the call. Now, the set of parameters the third function receives cause that if statement to become true. The third function then disposes the memory the pointer points to.
     But, soon after it returns, your function reads information from that same pointer. You, of course, didn't test it. Why should you at all?
     Then, in production, your program is terminated by the operating system reporting an ilegal memory access.
     Congratulations, you got your first dangling pointer.
+
     If you think these situations hardly happen I am extremely sorry to say you're wrong. In fact, a sigmificant part of software bugs are related to memory leaks or dangling pointers.
     You can very easily loose track of pointers when several pointers pointing to the same data are around.
     An easy way of solving both problems is by putting an intermediary component between you and the operating system, called the garbage collector.
@@ -278,10 +283,11 @@ pub(crate) struct Node<T> {
 /*
     029 - pointers, part 2
 
-    Well, we already talked about the ownership system.
-    Remember, a variable has to be owned by someone. This ownership is held by that owner untill something occurs.
+    Well, we already talked about the ownership system (see 020).
+
+    Remember, a variable has to be owned by someone. This ownership is held by that owner until something occurs.
     First, let's finally define that someone.
-    The someone onwing variables in rust is, generally, a scope. Scopes are delimited by { and }.
+    The someone owning variables in rust is, generally, a scope. Scopes are delimited by { and }.
     All functions have at least one scope, the function block.
     Structs have a scope, they own all fields inside it.
     After the closing brace, the scope ends. Then, ownership also ends. This is also when owned variables are dealocated, ence this is why when a function returns, all variables declared inside them will be dealocated.
@@ -295,7 +301,7 @@ pub(crate) struct Node<T> {
 
     Types of pointers
 
-    The most common pointer in rust is Box. This is a pointer that points to some memory in heap and has ownership of that balue.
+    The most common pointer in rust is Box. This is a pointer that points to some memory in heap and has ownership of that value.
 
     Notice that heap and stack are operating system concepts, ownership is a rust concept. What guarantees ownership is the rust compiler, by checking your code.
 
@@ -344,6 +350,7 @@ pub(crate) struct Node<T> {
 
     Right, we know that, because our tree is a container and because we have no way of knowing the amount of elements it will hold, we will need the heap.
     The heap is slow, but life usually requires tradeoffs. In this case, we decided that we would need the heap.
+
     "But", you ask, "why didn't we use Box"?
     Remember that Box reflects the ownership model that rust uses to its values. This means that no two boxes pointing to the same memory address can exist.
     But remember, also, that tree nodes must know which node is its parent (but the root nod which has no parent), what nodes are their children nodes and which node (if applicable) comes before it and after it at the same level.
@@ -401,10 +408,10 @@ pub(crate) struct Node<T> {
 
     If you want to read the data, you ask the gate keeper for a borrow. A nice struct with a read only reference to the data is returned, and the borrow leasts untill this struct is out of scope.
     The gate keeper can give as many read only borrows as you want.
-    However, when you want to write or to alter the data, you ask for a borrow_mut. The gate keeper gives you a nice struct with a writeable reference for the data is returned, and the borrow leasts until that struct is out of scope.
+    However, when you want to write or to alter the data, you ask for a borrow_mut. The gate keeper gives you a nice struct with a writeable reference for the data and the borrow leasts until that struct is out of scope.
     But there are rules for emiting the borrows, otherwise this would be just a useless gate keeper.
     Although you can have as many read only borrows, you can not have read only borrows active if you ask for a write borrow. Again, the rule is simmple: either one or more read borrows or one write borrow at a given time.
-    Notice though that this is exactly the same thing for references: one or more & references or one &mut reference at the same time.
+    Notice though that this is exactly the same thing for references: one or more & references or one &mut reference at a given time.
 
     "But", you ask, "when we are using references, the compiler checks this at compile time. What exactly happens if a write borrow is requested when there are active read borrows at run-time with refcells?"
 
@@ -440,7 +447,7 @@ pub(crate) struct Node<T> {
 
     Nothing like that is possible in C, when your whole program is at a constant risk.
 
-    As for Rc and Refcell, even with its checking logic you are gettting a way faster operation than wat you would get with garbage collectors.
+    As for Rc and Refcell, even with its checking logic you are gettting a way faster (and perhaps much more importantly deterministic) toperation than wat you would get with garbage collectors.
 
     Now, if you look at the struct where we defined our node, you will understand what is that inner field: it is a Rc pointer to a RefCell which controls access of the inner node struct.
 
@@ -503,14 +510,14 @@ pub(crate) struct Node<T> {
     Sudenly, it begins to be very important to think not only in what the business logic is, but also in how the computer is performing that. Be very welcome to the lower levels.
     So that you know, copying is so important that, although c++ uses a default schema, it allows each class to define how copies should happen. For more details, search for copy constructor on any c++ documentation.
     More high level languages such as python and javascript also pass parameters as copies. Because, except for basically numbers and booleans, all data is created on heap, when you pass a "variable" as parameter, you are in reallity creating a copy of the managed reference counted pointer to that data.
-    When the function returns, that copy of the pointer is destroied as the rest of that function stack is, the reference count is decreased and once nobody references that data anymore the garbage collector takes care of asking the operating system do dispose that memory.
+    When the function returns, that copy of the pointer is destroied as the rest of that function stack is, the reference count is decreased and once nobody references that data anymore the garbage collector takes care of asking the operating system to dispose that memory.
 
     Rust, in the other hand, uses a completely differemt schema by default. Instead of copying parameters, as we already discussed rust moves parameters, so that they are not useable by the caller function.
 
     No custom behavior can be executed, the move occurs in a way the struct author cannot interfer with.
 
-    Shallowed or deeply moved? Well, it doesn't matter. Because it is not a copy, it is a move. Remember, at any time only one variable can own a value.
-    Rust doesn't even specify a moving schema, this is considered to be an internal compiler behavior, thus subject to change without further notice. The only thing you, as a programmer, needs to know is that at any moment your data can be moved, and this is not by no means under your control.
+    Shallowed or deeply moved? Well, it doesn't matter. Because it is not a copy, it is a move. Remember, at any time only one variable can own a value. Remember also that a struct owns all their fields, so that when it moves then all its fields can also be safely moved, nobody else is owning them.
+    Rust doesn't even specify a moving schema, this is considered to be an internal compiler behavior, thus subject to change without further notice. The only thing you as a programmer needs to know is that at any moment your data can be moved, and this is not by no means under your control.
 
     And can you imagine what kinds of data structures are directly affected by this moving by default schema?
 
@@ -538,7 +545,7 @@ pub(crate) struct Node<T> {
 
     What is either moved or copied is (or are) the pointer (s) pointing to that address which are created on stack.
 
-    Here, when using the Rc pointers, we either move the Rc instance (not recomended) or clone the pointer (which inbcreases the reference count) and move the clone to a function.
+    Here, when using the Rc pointers, we either move the Rc instance (not recomended) or clone the pointer (which increases the reference count) and move the clone to a function.
     The address of the data pointed by the pointer (or pointers) kkeeps the same, regardless of all the moves or copies at the stack level.
 
     To be complete, rust uses a copy by default schema when passing some primitive data, and can also use it for structs if the author so desires.
@@ -557,79 +564,161 @@ pub(crate) struct Node<T> {
 */
 
 impl<T> Node<T> {
+    ///return a Node with a new InnerNode allocated
+    /// the function user will have no idea a rc pointer is being used, for them it will be like if this all happened on stack
     pub(crate) fn create() -> Self {
         Self {
             inner: InnerNode::build_node(None),
         }
     }
 
+    /// leaf nods are nodes having no children
+    /// we provide a way of storing the node value.
     pub(crate) fn create_leaf(val: T) -> Self {
         Self {
             inner: InnerNode::build_node(Some(val)),
         }
     }
 
+    /// ading a leaf node as a child of a given node
     pub(crate) fn add_leaf(&self, val: T) {
+        // build the node
         let leaf = InnerNode::build_from_value(val);
+        // now, we have a Rc pointer to a new InnerNode.
+        // We need to tell this inner node that we (the self) are its parent.
+        // Remember that we must achieve a borrow because we are changing a innerNode field, and this InnerNode is behind a Rc pointer.
+        // because we don't save the borrow to a variable (e.e let b = leaf.borrow_mut();), the borrow scope starts and ends at the same line.
+        // If we had saved that to a variable, the borrow would least until this function scope ended.
+        // We assign to the new node parent field a weak reference to our inner field. Our inner field is a Rc pointer pointing to our own address
+        // to better undestand weak references, see 032 ... but understand this for now as a clone of the pointer we use to reference our selves.
+        // This makes perfect sense, because ... we are the parent of this recently created Innernode.
         leaf.borrow_mut().parent = Rc::downgrade(&self.inner.clone());
+        // now, we need to add this node to our list of children.
+        // Remember though that this is only a wrapper structure, our selves here really means the innerNode we reference.
+        // Because we are changing (or writing) information on a field our InnerNode owns (the Vec of children) it means that we are also writing on our struct.
+        // And if we are writing on our struct behind a Rc pointer, we will also need a borrow.
+        // We know we are writting into our struct because the add_child method takes aa &mut self, so that we know that the state on the struct will change.
         self.inner.borrow_mut().add_child(leaf)
     }
 
+    /// add an already created node as a child of this node
     pub(crate) fn add_node(&self, node: Node<T>) {
+        // this works likke the add_leaf function.
+        node.inner.borrow_mut().parent = Rc::downgrade(&self.inner.clone());
         self.inner.borrow_mut().add_child(node.inner);
     }
 
+    /// gets the first child of a node or None if this is a leaf
     pub(crate) fn get_first_child(&self) -> Option<Node<T>> {
+        /*
+            This will require a more thoughtful explanation
+            First of all, at this time, the list of children of a InnerNode is a vec of pointers to InnerNode, our low level struct.
+            In order to keep the abstraction layer, we want to return a Node,  not an Rc to an InnerNode.
+            Because the list of children is contained by our InnerNode (the inner field) and the inner field is a Rc of a Reffcel, we need tio get a read borrow first.
+            Then, from this borrow, we access the children field, which is a vec.
+            We access the get method of the Vec and ask for the index 0, because we want the first child.
+            The get method returns an option, containing either the None variant or the Some variant, wrapping a Rc to an inner node.
+            We then use the map method on the option, which will return either None if the source option contains none or will offers us the value wrapped inside the Some option (a Rc) and will allow us to transform that.
+            We perform just that inside the closure function: we create a nice Node struct with its inner field pointing to a clone of the provided ?Rc pointer, which corresponde to the first child of this node.
+        */
         let borrow = self.inner.borrow();
         borrow.children.get(0).map(|b| Node { inner: b.clone() })
     }
 
+    /// gets the next cibling of this node
+    /// Returns None if this node has no next cibling
     pub(crate) fn get_next(&self) -> Option<Node<T>> {
+        // we already know what why this borrow is needed
         let borrow = self.inner.borrow();
+        // in order to understand what this next line does, you will need to understand weak references (see 032)
+        // Just keep in mind that this will return either a Some with the innerNode pointer of the next cibling or None if this node doesn't have one.
+        // We use the map method on the returned Option to either rreturn None or then Some with a high level Node structure pointing to the innerNode corresponding to this node next cibling.
         borrow.next.upgrade().map(|p| Node { inner: p })
     }
 
+    /// gets the number of children this node has
     pub(crate) fn get_num_of_children(&self) -> usize {
         self.inner.borrow().get_num_of_children()
     }
 
+    /// gets the parent node if it exists
     pub(crate) fn get_parent(&self) -> Option<Node<T>> {
         let borrow = self.inner.borrow();
+        // in order to understand what this next line does, you will need to understand weak references (see 032)
+        // Just keep in mind that this will return either a Some with the innerNode pointer of the next cibling or None if this node doesn't have one.
+        // We use the map method on the returned Option to either rreturn None or then Some with a high level Node structure pointing to the innerNode corresponding to this node next cibling.
         borrow.parent.upgrade().map(|p| Node { inner: p })
     }
 
+    /// gets the previous cibling of this node if it exists
     pub(crate) fn get_previous(&self) -> Option<Node<T>> {
         let borrow = self.inner.borrow();
+        // in order to understand what this next line does, you will need to understand weak references (see 032)
+        // Just keep in mind that this will return either a Some with the innerNode pointer of the next cibling or None if this node doesn't have one.
+        // We use the map method on the returned Option to either rreturn None or then Some with a high level Node structure pointing to the innerNode corresponding to this node next cibling.
         borrow.previous.upgrade().map(|p| Node { inner: p })
     }
 
+    /// gets the value held by this Node
+    /// will cause an error if multiple calls to get the value of the same node happens in the same scope
     pub(crate) fn get_value(&self) -> NodeData<Option<T>> {
+        /*
+            Again, a more detailed explanation
+            We want to provide the value this node contains to be used.
+            After all, if we had a container which wouldn't allow us to read the contained values, this container would be not that useful!
+            Because the value is contained by the innerNode struct this node is backed for, the natural way of returning it would be to first obtain a read borrow to the inner struct, then return its value field.
+            But we have a problem here! Whenever the return happens, the borrow will be out of scope.
+            It means that the return of the value field is no longer safe, because the borrow which assured that safety has gone when the function returned.
+            But we need to make sure that while the returned valuye is in use, nobody will update it. Remember, this is rust playing its safety role.
+            Then what to do?
+            We could, instead of returning only the value, return it and the borrow together either in a tuple or a struct.
+            This way, because we also return the borrow, it won' go out of scope when the function returns and it will belong to the same scope the returned value also belongs, because they are returned together.
+            In fact, you will see several functions returning a tuple composed of a guard and a value, this is a nice way of solving the problem.
+            But if we do it we will have a full read only borrow to the node and the value, so that we cannot manipulate the mode (set parent, add it to a list, and others) while we are reading its value.
+            We also want to return a value, because a good abstraction will provide back a value, not a value and a guard that the high level programmer shouldn't have to worry about.
+            In order to achieve that, we will use the method on the RefCell struct which restricts a borrow to a given field of a struct, ratter than the struct itself.
+            The map method takes a struct and returns a field of this struct encapsulated in a Cell::Ref struct.
+            This Cell::Ref struct contains a read only reference to the value, and also a borrow field, which manages the borrow.
+            So the idea is basically similar to one of our proposals, which would be encapsulate the value and the borrow in a struct, so that when the struct goes out of scope both the value and the borrow will be deropped together.
+            This, however, still makes our abstraction some what hard to use.
+            At the end, if this three holds integers, if we request the value of a Node, we want to have an integer ... a Cell::Ref containing a borrow and some form of integer seems not that easy for a high level user.
+            Well, we can make some inferences to make tthis struct behave more like whatever value is returned. This is usually achieved by means of implementing the deref trait, and this is why we created a custom struct, called NodeData, for which we implemented this trait.
+        */
         let borrow = self.inner.borrow();
         NodeData {
             inner: cell::Ref::map(borrow, |x| &x.value),
         }
     }
 
-    pub(crate) fn is_same_node(&self, other: &Node<T>) -> bool {
+    // compare if two nodes are the same
+    // This is used to verify whether tho high level Node structs point to the same inner struct in memory
+    // notice that this function is not public
+    fn is_same_node(&self, other: &Node<T>) -> bool {
         Rc::ptr_eq(&self.inner, &other.inner)
     }
 
+    /// verifies whether this node has no children
     pub(crate) fn is_leaf(&self) -> bool {
         self.inner.borrow().is_leaf()
     }
 
+    /// verifies whether this node is a root node, a node which has no parent
     pub(crate) fn is_root(&self) -> bool {
         self.inner.borrow().is_root()
     }
 }
 
+/// encapsulates a node value.
+/// Provides transparent access to the value by means of implementing the deref trait
 pub(crate) struct NodeData<'a, T> {
     inner: cell::Ref<'a, T>,
 }
 
+// deref trait imple,mentation
 impl<'a, T> Deref for NodeData<'a, T> {
     type Target = T;
 
+    // returns a reference for the value field of the dereferenced value of the Cell::Ref inner struct
     fn deref(&self) -> &Self::Target {
         &*self.inner
     }
@@ -660,15 +749,15 @@ impl<'a, T> Deref for NodeData<'a, T> {
     As we decided, though, we are using safe rust and reference counted pointers to make sure we have no dangling ones around and to make sure a node is dealocated only when nobody else is using it.
     For these cases, we will introduce a new struct, called Weak.
     Weak, a short name for weak references, represents ... exactly a weak reference.
-    These are pointers that can ... or perhaps may be not ... point to
+    These are pointers that might point to something.
 
     But how weak references work?
-    They are similar to Rc pointers, but they don't prevent an rc pointer to dealocate its data.
+    They are similar to Rc pointers, but they don't prevent a rc pointer to dealocate its data when the last instance of that Rc disappears.
     If we need to create a weak reference, we usually call downgrade() on a Rc pointer. This returns a Weak struct holding a pointer pointing to the Rc pointer.
     At the same time, a weak counter is increased on the Rc pointer. Be aware though that when a Rc is clonned, another counter, called the strong counter, is increased.
-    In order to use a weak reference, you need to call the upgrade() method on it. If the data it points to is still allocated, it returns an Option enum with the Some variant containing a clone of the full Rc pointer to that data.
+    In order to use a weak reference, you need to call the upgrade() method on it. If the data it points to is still allocated, the upgrade method returns an Option enum with the Some variant containing a clone of the full Rc pointer to that data.
     If the data it points to has already been reclaimed, it returns the None variant.
-    Each time a Rc is dropped, the strong reference counter is checked. The strong reference counter is, as we already discussed, increased each time a new clone is created and decreased each time this clone is dropped. Weak references are not taken in account.
+    Each time a Rc is dropped, the strong reference counter is checked. The strong reference counter is, as we already discussed, increased each time a new clone of the Rc is created and decreased each time this clone is dropped. Weak references are not taken in account.
     If you are asking your self how the weak reference knows the address of the data they point to, I will explain quickly that Rc pointers encapsulate their selves pointers to a struct in the heap which hold a strong counter, a weak counter and a pointer to the real data also in the heap.
     When the strong count is 0, the operating system is called to reclaim memory of the real data.
     At this time, it is not possible to clone the Rc pointer, because all instances of that Rc pointer have been dropped (we know that because the strong reference count is 0).
@@ -687,15 +776,19 @@ impl<'a, T> Deref for NodeData<'a, T> {
     8. Soon after, the weak counter is checked. If it is also 0, the Rc struct itself is dealocated.
     9. But if it is greater than 0, the Rc struct is still kept allocated. On each drop of the existing Weaks, the weak counter is decreased. Once it is 0 then the Rc struct is dealocated.
 
-    As a last comment on this topic, If you are still in doubt if garbage collectors aren't really able , to handle cyclic references, I recoment you to search for weak references for javascript and python.
+    As a last comment on this topic, If you are still in doubt if garbage collectors aren't really able to handle cyclic references, I recomend you to search for weak references for javascript and python.
 
     There is a main difference, though, between weak references in rust and in these other languages:
     The garbage collector is not required to dealocate objects as soon as the last strong reference to them is out of scope.
     These objects can be kept allocated for a long time before the garbage collector decides it is finally time to ask the operating system to reclaim that memory.
-    If you try to use a weak reference to access an object you are sure is not in use, it might still return a valid reference, because even though no strong references are in scope anymore, perhaps the garbage collector still didn't dealocated the object.
+    If you try to use a weak reference to access an object you are sure is not in use, it might still return a valid reference, because even though no strong references are in scope anymore, perhaps the garbage collector still didn't dealocate the object.
     In the other hand, this never happens in rust, because there is no garbage collector. If a Weak, when upgraded, returns None, you can be sure that the data pointed by that Rc is no longer aallocated.
 */
 
+// the InnerNode, the real low level struct supporting a Node struct
+// notice that all references to parent, next and previous are weak
+// the only strong references are in the Vec of children
+// notice that there is a field called address, where the address of the InnerNode itself will be stored, so that it can set it self as a parent of one of its children
 struct InnerNode<T> {
     address: Weak<RefCell<InnerNode<T>>>,
     children: Vec<Rc<RefCell<InnerNode<T>>>>,
@@ -706,11 +799,72 @@ struct InnerNode<T> {
 }
 
 impl<T> InnerNode<T> {
+    // builds an InnerNode with a given value set
     fn build_from_value(val: T) -> Rc<RefCell<Self>> {
         Self::build_node(Some(val))
     }
 
+    // builds an InnerNode
+    /*
+    033: the initialization problem
+
+    The function below uses a strange method on the Rc to build the InnerNode on heap.
+
+    We need to understand why this is happening.
+
+    First of all, struct initialization is an important topic.
+
+    Two things are always considered when thinking about initialization. First, data really should be initialized, at least most part of times.
+
+    If you declare a variable and don't initialize it, whatever thing previously in memory will be used as its value. See, cleaning values isn't strictly needed if a given memory region is not in use. If nobody is using it, then wheter it has or hasn't data in practical terms is not important, because nobody can access it anyways!
+
+    Put it a nother way ... suppose you own houses for renting.
+    At any given time, one of your clients disposes a house, the contract is finished.
+    Would you clean this hause in order to prepare it for a next possible client?
+    If you do it soon after the first client leaves, you will spend a lot of energy. May be the next client will appear in one hour, one day, one week ... or that it will never appear again (the computer is turned off).
+    If you do it whenever the next client appears, them will get a clean, confortable house. It so happens that may be they want to reorganize the hause in a different way, so that your cleaning might spend energy and still nnot satisfy them.
+    What do you do? Well, you put on the rental contract that the hause organization is the client responsibility whenever they rent the hause, stating clearly that the previous person might have left that hause in an unknown state (there might be personal objects left behind, mess, dirty).
+    Your new client might find this very unpolite, but they have no other option, they need that hause. You, clearly, have more things to do other than cleaning hauses, so you won't even care to clean that hause when someone leaves.
+    Now, the hauses owner is the operating systems, and clients renting and leaving hauses are the programs running and asking the operating system for memory.
+    You like it or not, it is your responsibility, as a developer, to make sure you clean and organize a piece of memory before usage.
+    A, are you saying me that you programmed all this time without someone telling you this incredible news? Well, it is due to the fact that most languages abstract this from you, making authomatic memory organization before allowing you to use it.
+
+    Still, this information should be more spread. I can't really tell you the amount of bugs and security issues have happened because memory initialization and cleanup has not been performed the way it should be.
+
+    Rust will force you to initialize a variable before you use it. In other words, it will force you to clean a new hause before entering it. Not every other low level language will be so helpful to you, most part of them will just let you do whatever you want.
+
+    Notice though that initializing variables is a some what costly operation. If you are instantiating a struct and want to use only one field, you could initialize only that field and save time by not even touching the others.
+    If you are returning this from a function, then, it is even better! Optimize, this is the goal!
+    "Yep, right, I am Not using rust at all, rust wants to teach me what to do and I am already an adult, I know to program, I want my freedom, I will do it the way I want!"
+    Right, keep going, be an hero by saving time ... until another programmer using your function that smartly returns a half initialized struct either doesn't read the documentation (if it ever exists) or doesn't understand what is going on and uses one of that fields you didn't care to initialize. What happens them?
+    Welcome to undefined behavior again. Because there is no way of knowing what is going to be in a piece of memory at a given time, a given program can just crash (best case) or can exibite silent bugs almost impossible to detect or understand.
+
+    As usual, unsafe rust will let you play some what with uninitialized memory.
+
+    In terms of initialization, there is a second issue we should be looking at.
+    Now that we know that we must initialize memory before using it, we need to think
+
+
+
+
+
+
+    */
     fn build_node(value: Option<T>) -> Rc<RefCell<Self>> {
+        /*
+            This function builds an InnerNode
+            But instead of returning the InnerNode on stack, it allocates the new struct on the heap and returns an Rc pointing to it.
+            Why?
+            Because this struct, the InnerNode, is not designed to live on stack.
+            So that we provide an abstraction, this function, to make sure this struct will be constructed the way we designed.
+
+            You will notice, though, that we didn't construct the Rc pointer as usual.
+            We are using instead the new_cyclic method, which provides us with a closure from where we build the struct which is being allocated.
+
+            Understanding it
+
+        */
+
         Rc::new_cyclic(|rc| {
             RefCell::new(Self {
                 address: rc.clone(),
