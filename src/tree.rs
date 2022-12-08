@@ -361,7 +361,7 @@ pub(crate) struct Node<T> {
     Rc pointers
 
     Rc is another kind of pointer: Differently from Box, Rc allocates a reference count together with the data it holds.
-    By using a trick called deref, it allows direct access to its data, but the reference count field is there, alongside the data, and is used in two main operations:
+    By using a trick called deref (see 035), it allows direct access to its data, but the reference count field is there, alongside the data, and is used in two main operations:
 
     When you call clone(), a pointer pointing to the same structure (actual value plus reference count) is returned. The reference count increases by one.
     When the pointer is dropped (deallocated), the reference count is checked: if it is greater than one, it is decreased and the clone (only the pointer, not the area the pointer points to) is dropped.
@@ -682,7 +682,7 @@ impl<T> Node<T> {
             So the idea is basically similar to one of our proposals, which would be encapsulate the value and the borrow in a struct, so that when the struct goes out of scope both the value and the borrow will be deropped together.
             This, however, still makes our abstraction some what hard to use.
             At the end, if this three holds integers, if we request the value of a Node, we want to have an integer ... a Cell::Ref containing a borrow and some form of integer seems not that easy for a high level user.
-            Well, we can make some inferences to make tthis struct behave more like whatever value is returned. This is usually achieved by means of implementing the deref trait, and this is why we created a custom struct, called NodeData, for which we implemented this trait.
+            Well, we can make some inferences to make tthis struct behave more like whatever value is returned. This is usually achieved by means of implementing the deref (see 035) trait, and this is why we created a custom struct, called NodeData, for which we implemented this trait.
         */
         let borrow = self.inner.borrow();
         NodeData {
@@ -714,7 +714,206 @@ pub(crate) struct NodeData<'a, T> {
     inner: cell::Ref<'a, T>,
 }
 
-// deref trait imple,mentation
+/*
+    035: dereferencing and the Deref trait
+
+    If you look at the get_value function, you will see why we are using a NodeData instead of the value itself to return the node value.
+
+    Long story short, we need to return the borrow and a reference to the node value together, so that both have the same life time and are dropped together.
+
+    But we want the user to not even think about the borrow.
+    We want it to access the value and the value's methods and fields like if the NodeData was the value itself.
+    In short, we want trick the user into thinking that this NodeData is a reference to the valuye field.
+
+    The deref trait allows exactly that. It is used everywhere (this is why you can access a value behind an Rc, but not its counters) when dereferencing, and also why you can access the value's fields and methods with the dot operator, not the fields and values of the Rc it self.
+
+    To make it clearer, we will dive into dereferencing first, because most part of programmers don't even think about that concept, although it is being used all the time.
+
+    As we all know by now, pointers hold the address of some variable eelse where in memory. May be this variable is at a different place on stack (a reference a function received as parameter for example), or may be this variable is far on the heap (some space allocated at run-time by the operating system), but the fact is that pointers hold addresses (or point to) another variable.
+
+    Have you wondered how could pointers be useful by their selves?
+
+    Well, it makes no sense to hold the address of something if I can not access this something from this address. It is like having a rmote control for a tv which is in another street, we can do nothing with it.
+
+    The act of from a pointer having access to the variable it points to is called dereferencing.
+
+    Many languages, such as javascript, java and python, dereference by default. Well, sometimes they do, sometimes they don't. They have their own rules and most part of times programmers either don't know or don't care, both leading to bugs.
+    A, you don't believe me?
+    Then stop and think why in java if you are using == to compare two objects you are probably not doing what you would expect. Why do they have a equals method and a == operator?
+    It is because == operator acting on two references will compare if both points to the same address in memory, while the equals method which have to be overriden by each class compare if two objects are semantically equivalent ("hello".equals("hello") would be true because the values are considered to be equals, while hello == hello will hold true only the two references point to the same object).
+    "what is the problem here? You are criticizing java, I love java, I will stop reading this right now, you have no idea about what you are saying, back to rust!"
+    Calm down, dear reader. I have nothing to say about java. The issue comes right now:
+    Based on the == operator design, we can conclude that everytime we type a name of a reference, we are looking at the reference it self, not at what it points to. This is why ref1 == ref2 will hold true only if the references are equal, if they both have the same value, value here being the address of a given object, not the object.
+    Right, we are kit sure that only by typing the name of the reference we are looking at the reference, not at what the reference points.
+    So if we want to, say, print the reference value, which would be the address of the object it points to, we can perfectly use println, right?
+    Well, let's, in a rust project, have a little of java!
+    ```
+        public class Program
+        {
+            public static void main(String[] args) {
+                String a = new String("hello");
+                // a contains a reference for a object created on heap. Java creates all objects always on heap, a is a reference.
+                String b = new String("hello");
+                // b contains a reference for a object created on heap. Java creates all objects always on heap, a is a reference.
+                System.out.println(a == b);
+                System.out.println(a);
+                System.out.println(b);
+                System.out.println(a.equals(b));
+            }
+        }
+    ```
+
+    Run that at any java environment ...
+    What do we expect to see?
+    Well, first line should print false, because clearly the addresses of a and b are not the same.
+    Second line should print a hexa address, because we are printing the value of a reference (a pointer)
+    Third line should behave the same, but printing a different address, because b is clearly allocated at a different address than a. These two lines confirm the result of the first line.
+    Fourth line should fail, because references or pointers have no methods associated, they only contains addresses of variables.
+
+    But ...  it turns out that the results are kit different:
+
+    false
+    hello
+    hello
+    true
+
+    What is going on here?
+    First line printed false, as we expected. The references a and b point to different addresses.
+    Second line printed ... hello ... and clearly there is no address called hello in memory. It can't even be a coincidence, addresses are designed in hexa and the last letter used by this notation is f, not h. Not to say the presence of the o letter ...
+    Third line printed the same, even receiving a completely different reference.
+    And the fourth line didn't fail. Instead, it printed true, showing that the equals method has been called. But references have no methods, right? This is why we have to use the == operator to compare them.
+
+    What do we learn here? We learn that by typing a reference name, sometimes the reference is used, but some times the value the reference points to is used.
+    In line 1, the compyler interpreted the reference names as the references them selves.
+    In lines two and tree, even though we passed the references as parameters, the println function used the values of the objects these references point to as source for printing.
+    In line 4, the dot operator on a reference called a method on the value the reference points to.
+
+    This is why you have likely never heard about dereferencing.
+    This is also why I say that not knowing about a language specific dereferencing rules can lead to bugs or undefined behavior.
+
+    The c and c++ languages don't use implicit dereferencing rules.
+    Because they recognize you might want to refer to both the pointer it self or to the value the pointer points to, they force you to explicitly specify what you want to do.
+    Both languages use the * operator to achieve that. This operator, when placed right before a pointer name, signalizes that you want to access the value the pointer points to, not the value of the pointer. We call this operator the deref operator.
+    Also, c++ uses a shortamd operator to access fields and methods of instances of classes behind a pointer. Did you know the -> operator? Well, pointername->method is exactly the smame of (*pointername).method.
+    In fact, php has adopted the -> operator of c++, and it makes sense, because in php all objects are created in the heap and therefore are submited to the garbage collector.
+
+    "but", you say, "this is about rust. I want to learn rust, we are here because of rust, stop talking about other languages!"
+    Well, you would be right. It so happens that some times before learning the approach a language uses, we need to learn some concept and seeing other implementations will help. Let's see how rust solves this issue.
+
+    First, rust also forces you to dereference a pointer to access its value.
+    This is why you sometimes will see an * before a value. It is the programmer trying to access the value the pointer points to.
+    But, remember, rust will try to make things easier for the programmer whenever it can.
+    This is why the dot operator will always translate to the value the pointer points to. The dot operator does authomatic dereferencing.
+    I would personally preffer the use of a -> operator, so that readers will imediately know that the holder is a pointer, not an object on stack, but ... things just work the way they work.
+
+    But what is the deref trait about?
+
+    The deref trait allows us to comtrol how the deref happens.
+
+    Both the * deref operator and the ddot operator perform dereferencing from a pointer to the value it points to.
+    But what if I want to redirect that dereference to something else?
+    Supose that I have struct A which holds an instance of struct B.
+    For any reason, I want that everytime a dereference of a pointer pointing to A occurs, what is returned is not A it self, but the B held by A value.
+    So that *a will return the value of a.b and a.c() will call the c method of the b field of the a struct.
+
+    In a sense, this is like an operator overload, because it redirects the dereferencing.
+
+    Still way generic?
+
+    Let's look at a little bit of rust
+
+    ```
+        use std::ops::Deref;
+
+        struct WithoutDeref {
+            i: i32,
+        }
+
+        impl WithoutDeref {
+            fn without_deref_method(&self) {
+                println!("running on without deref target. value {}", self.i);
+            }
+        }
+
+        struct WithDeref {
+            j: i32,
+            new_deref_target: NewDerefTarget,
+        }
+
+        impl WithDeref {
+            fn build(with_deref_value: i32, new_deref_target_value: i32) -> Self {
+                Self {
+                    j: with_deref_value,
+                    new_deref_target: NewDerefTarget {
+                        i: new_deref_target_value,
+                    },
+                }
+            }
+
+            fn with_deref_method(&self) {
+                println!("running on with deref. Value {}", self.j);
+            }
+        }
+
+        impl Deref for WithDeref {
+            type Target = NewDerefTarget;
+
+            fn deref(&self) -> &Self::Target {
+                &self.new_deref_target
+            }
+        }
+
+        struct NewDerefTarget {
+            i: i32,
+        }
+
+        impl NewDerefTarget {
+            fn new_deref_target_method(&self) {
+                println!("running on new deref target. value {}", self.i);
+            }
+        }
+
+        fn main() {
+            // without deref trait (normal deref behavior)
+            // allocate on stack
+            let without_deref = WithoutDeref { i: 1 };
+            // without_deref is on stack.
+            // The . operator calls methods normally
+            without_deref.without_deref_method();
+            // allocate on heap
+            let without_deref_pointer = Box::new(WithoutDeref { i: 2 });
+            // without_deref_pointer is on stack.
+            // without_deref_pointer points to a WithoutDeref allocated on heap
+            // the dot operator will call methods on the WithoutDeref struct on heap, not on the without_deref_pointer, the without_deref_pointer does not have methods.
+            without_deref_pointer.without_deref_method();
+            // with deref trait (custom deref behavior)
+            // allocate on stack
+            let with_deref = WithDeref::build(3, 4);
+            // with_deref is on stack, but there is something different:
+            // Try to find the new_deref_target_method implementation on the WithoutTarget struct ... and you will see that such implementation does not exist!
+            // in fact, this implementation belongs to the NewDerefTarget struct. We can call this on a WithoutTarget instance because the Deref trait redirects calls from WithDeref to the instance of NewDerefTarget the WithDeref instance holds
+            with_deref.new_deref_target_method();
+            // allocate on heap
+            let with_deref_pointer = Box::new(WithDeref::build(5, 6));
+            // with_deref_pointer is a pointer to a WithDeref struct allocated on heap.
+            // We again are showing in the line below that the deref trait implementation redirects calls from a WithoutDeref pointer to the NewDerefTarget instance it holds
+            with_deref_pointer.new_deref_target_method();
+            // now, because we have a pointer,we will try using the dereference operator to have direct access to the struct fields
+            println!("{}", (*with_deref_pointer).i);
+            // As you can see, the * operator still uses the Deref trait redirecting, because there is no i field in WithDeref struct
+        }
+    ```
+
+    In a sense, the Deref trait might  make some objects bheave like java, letting one unclear about what exactly happens when a method is called on a pointer.
+    Not so because deref might or not occur (it always occurs) but because you have no way of knowing who is going to be responding fpor that call.
+    It is also very sad that if you define methods with the same name on source and target objects the source method has precedence, in a silent way.
+    This is valid even when traits are implemented on source, so that if you implement a trait on a source object that has a method with the same name of a method on the destination deref target, the source method will sart to be used silently.
+    Again, rust even being a great language has its issues.
+    In our case, we want to make the user use the NodeData as if it were a Node value.
+    This is why we are redirecting calls from the NodeData to the value it contain.
+    Because the value field is a Cell::Ref, we dereference it first to really get to the value, then return a reference to the value.
+*/
+
 impl<'a, T> Deref for NodeData<'a, T> {
     type Target = T;
 
@@ -804,67 +1003,89 @@ impl<T> InnerNode<T> {
         Self::build_node(Some(val))
     }
 
-    // builds an InnerNode
     /*
-    033: the initialization problem
+        033: Data initialization
 
-    The function below uses a strange method on the Rc to build the InnerNode on heap.
+        The function below uses a strange method on the Rc to build the InnerNode on heap.
 
-    We need to understand why this is happening.
+        We need to understand why this is happening.
 
-    First of all, struct initialization is an important topic.
+        First of all, struct initialization is an important topic.
 
-    Two things are always considered when thinking about initialization. First, data really should be initialized, at least most part of times.
+        Two things are always considered when thinking about initialization. First, data really should be initialized, at least most part of times.
 
-    If you declare a variable and don't initialize it, whatever thing previously in memory will be used as its value. See, cleaning values isn't strictly needed if a given memory region is not in use. If nobody is using it, then wheter it has or hasn't data in practical terms is not important, because nobody can access it anyways!
+        If you declare a variable and don't initialize it, whatever thing previously in memory will be used as its value. See, cleaning values isn't strictly needed if a given memory region is not in use. If nobody is using it, then wheter it has or hasn't data in practical terms is not important, because nobody can access it anyways!
 
-    Put it a nother way ... suppose you own houses for renting.
-    At any given time, one of your clients disposes a house, the contract is finished.
-    Would you clean this hause in order to prepare it for a next possible client?
-    If you do it soon after the first client leaves, you will spend a lot of energy. May be the next client will appear in one hour, one day, one week ... or that it will never appear again (the computer is turned off).
-    If you do it whenever the next client appears, them will get a clean, confortable house. It so happens that may be they want to reorganize the hause in a different way, so that your cleaning might spend energy and still nnot satisfy them.
-    What do you do? Well, you put on the rental contract that the hause organization is the client responsibility whenever they rent the hause, stating clearly that the previous person might have left that hause in an unknown state (there might be personal objects left behind, mess, dirty).
-    Your new client might find this very unpolite, but they have no other option, they need that hause. You, clearly, have more things to do other than cleaning hauses, so you won't even care to clean that hause when someone leaves.
-    Now, the hauses owner is the operating systems, and clients renting and leaving hauses are the programs running and asking the operating system for memory.
-    You like it or not, it is your responsibility, as a developer, to make sure you clean and organize a piece of memory before usage.
-    A, are you saying me that you programmed all this time without someone telling you this incredible news? Well, it is due to the fact that most languages abstract this from you, making authomatic memory organization before allowing you to use it.
+        Put it a nother way ... suppose you own houses for renting.
+        At any given time, one of your clients disposes a house, the contract is finished.
+        Would you clean this hause in order to prepare it for a next possible client?
+        If you do it soon after the first client leaves, you will spend a lot of energy. May be the next client will appear in one hour, one day, one week ... or that it will never appear again (the computer is turned off).
+        If you do it whenever the next client appears, them will get a clean, confortable house. It so happens that may be they want to reorganize the hause in a different way, so that your cleaning might spend energy and still nnot satisfy them.
+        What do you do? Well, you put on the rental contract that the hause organization is the client responsibility whenever they rent the hause, stating clearly that the previous person might have left that hause in an unknown state (there might be personal objects left behind, mess, dirty).
+        Your new client might find this very unpolite, but they have no other option, they need that hause. You, clearly, have more things to do other than cleaning hauses, so you won't even care to clean that hause when someone leaves.
+        Now, the hauses owner is the operating systems, and clients renting and leaving hauses are the programs running and asking the operating system for memory.
+        You like it or not, it is your responsibility, as a developer, to make sure you clean and organize a piece of memory before usage.
+        A, are you saying me that you programmed all this time without someone telling you this incredible news? Well, it is due to the fact that most languages abstract this from you, making authomatic memory organization before allowing you to use it.
 
-    Still, this information should be more spread. I can't really tell you the amount of bugs and security issues have happened because memory initialization and cleanup has not been performed the way it should be.
+        Still, this information should be more spread. I can't really tell you the amount of bugs and security issues have happened because memory initialization and cleanup has not been performed the way it should be.
 
-    Rust will force you to initialize a variable before you use it. In other words, it will force you to clean a new hause before entering it. Not every other low level language will be so helpful to you, most part of them will just let you do whatever you want.
+        Rust will force you to initialize a variable before you use it. In other words, it will force you to clean a new hause before entering it. Not every other low level language will be so helpful to you, most part of them will just let you do whatever you want.
 
-    Notice though that initializing variables is a some what costly operation. If you are instantiating a struct and want to use only one field, you could initialize only that field and save time by not even touching the others.
-    If you are returning this from a function, then, it is even better! Optimize, this is the goal!
-    "Yep, right, I am Not using rust at all, rust wants to teach me what to do and I am already an adult, I know to program, I want my freedom, I will do it the way I want!"
-    Right, keep going, be an hero by saving time ... until another programmer using your function that smartly returns a half initialized struct either doesn't read the documentation (if it ever exists) or doesn't understand what is going on and uses one of that fields you didn't care to initialize. What happens them?
-    Welcome to undefined behavior again. Because there is no way of knowing what is going to be in a piece of memory at a given time, a given program can just crash (best case) or can exibite silent bugs almost impossible to detect or understand.
+        Notice though that initializing variables is a some what costly operation. If you are instantiating a struct and want to use only one field, you could initialize only that field and save time by not even touching the others.
+        If you are returning this from a function, then, it is even better! Optimize, this is the goal!
+        "Yep, right, I am Not using rust at all, rust wants to teach me what to do and I am already an adult, I know to program, I want my freedom, I will do it the way I want!"
+        Right, keep going, be an hero by saving time ... until another programmer using your function that smartly returns a half initialized struct either doesn't read the documentation (if it ever exists) or doesn't understand what is going on and uses one of that fields you didn't care to initialize. What happens them?
+        Welcome to undefined behavior again. Because there is no way of knowing what is going to be in a piece of memory at a given time, a given program can just crash (best case) or can exibite silent bugs almost impossible to detect or understand.
 
-    As usual, unsafe rust will let you play some what with uninitialized memory.
+        As usual, unsafe rust will let you play some what with uninitialized memory.
 
-    In terms of initialization, there is a second issue we should be looking at.
-    Now that we know that we must initialize memory before using it, we need to think
+        In terms of initialization, there is a second issue we should be looking at.
+        Now that we know that we must initialize memory before using it, we need to think about how we are going to do it.
+
+        First, structs usually have internal state that we don't want to expose to our users. We don't really want to allow our users to initialize the inner field of the Node struct.
+        This is a complex field that requires all the knowledge we have been documenting here. Letting the user initialize it is dangerous and will impose them a burden, because they will need to know things that they shouldn't have to.
+        Danger and bad abstraction ... well, there has to be something better.
+        It turns out there is. Oriented object languages have provided constructors in order to allow the class authors to control initialization.
+        Also notice that a user can't avoid a constructor call, so that initialization before use is mandatory.
+        Other less strict languages , such as javascript, have no way of controlling plain old objects initialization, having to rely on the user creating and initializing objects that others expect to use in a given way.
+        Do you remember the "cannot read x of undefined"?
 
 
+        Rust does allow you to give the user the control of initialization. You just need to declare a struct with all fields as pub. The user will be required to fill the fields values before using this struct, but what they will do is out of your control.
 
+        "My dear", you say, "Having to initialize all values all the time is a lot of work! This would make my life so boring!"
+        Well, rust gives you a little help here. There are default suggested values for primitive data types, and you can specify yours by implementing the default::Default trait.
+        You can call at any time the ..default::Default() method inside the initializer, after specifying that fiels important to you, and if the struct implements the default::Default trait, these values will be filled.
+        It is even possible to derive #[derive(Default)] on a struct, if all their fields happen to implement the default::Default trait, so that you don't even have to implement the default::Default trait yourself. You are very welcome, rust design!
 
+        In the other hand, you can provide a function in a impl block which returns a struct of the type the impl block belongs to.
+        In this way, you give the users the option to delegate struct initialization to a function (usually called new or build) which initializes that struct in a way they don't control nor they need to worry about.
 
+        This is exactly what the function below does.
 
+        First of all, there is no way of initializing the struct on stack. This is so because this struct is not designed to live on stack, it is designed to live on the heap and be accessible only through reference counted pointers.
+        So, the build_node function takes care of initializing an InnerNode struct on the heap, putting it behind a Refcell, behind a Rc pointer, just the way it needs to be.
+        What we get as a result is the Rc of the Refcell of the InnerNode, which is safely allocated and initialized, ready to be yused.
+
+        But there is something else going on here.
+
+        You will notice that the allocation method on the Rc used is not the classic new method. Instead, we use the new_cyclic method, which accepts a closure and expects back a InnerNode struct. Why is it so?
+
+        Because our struct needs to store the address of itself. And the address of itself will not be accessible until the struct is fully initialized, otherwise rust would be giving you a pointer to a half initialized memory.
+        But the struct can't be fully initialized, until it can store the address of itself in the address field. But the address of itself isn't available until it is fully initialized.
+        Do we have a cyclic deadlock here? The struct needs the address to finish initializing, but initialization needs to be complete before the address is available.
+        Well, we have a cyclic dependency, but not a deadlock.
+        What rust does is this: it allocates the Rc memory, in the sense that the Rc struct itself is allocated (thus the Rc has already an address), but the data the Rc points to is not.
+        And, if you think about it, this is exactly the state the Rc struct is when all strong references had gone, but there are weak references around. In this situation, the data has already be reclaimed by the system, thus it is no longer available. The Rc struct, however, is still allocated, because the weak counter still signalizes that there are weak references in scope some where.
+        The new_cyclic then allocates the Rc struct, increases the weak counter by 1 ... and calls a closure, passing as parameter a weak reference.
+        This weak reference is what we use to store the address of itself into its address field. Once the initialized struct is returned, the strong counter is increased, because now there is a struct allocated and then the data field of Rc is pointing to it.
+        If we call the upgrade() method inside rhe clusure it will return None, because the struct itself is still being allocated.
+        But, once new_cyclic has returned, whenever the struct needs to obtain a pointer to itself, it can safely call upgrade() on the address field.
+        Still, it is a good practice to keep always weak references to parents and ciblings, because at any time these might not be available. In fact, because the address field is itself a weak reference, it won't interfer with dealocation of the struct itself.
     */
+
+    // builds an InnerNode
     fn build_node(value: Option<T>) -> Rc<RefCell<Self>> {
-        /*
-            This function builds an InnerNode
-            But instead of returning the InnerNode on stack, it allocates the new struct on the heap and returns an Rc pointing to it.
-            Why?
-            Because this struct, the InnerNode, is not designed to live on stack.
-            So that we provide an abstraction, this function, to make sure this struct will be constructed the way we designed.
-
-            You will notice, though, that we didn't construct the Rc pointer as usual.
-            We are using instead the new_cyclic method, which provides us with a closure from where we build the struct which is being allocated.
-
-            Understanding it
-
-        */
-
         Rc::new_cyclic(|rc| {
             RefCell::new(Self {
                 address: rc.clone(),
@@ -877,11 +1098,32 @@ impl<T> InnerNode<T> {
         })
     }
 
+    // adds a child to this node
     fn add_child(&mut self, node: Rc<RefCell<InnerNode<T>>>) {
+        /*
+            034: inner scopes and shadowing
+
+            Why are we opening a new brace here? This is not a function, neither is it a struct. Then what?
+
+            In rust, scopes don't need to be bound to functions.
+            We can have as many scopes as we want inside a given block. In fact, if blocks and other kinds of blocks also create new scopes.
+
+            Inside a scope, we can reference variables available in the outer scopes.
+            In this case, we receive a node as parameter. Before adding it as a child, we want to configure on it its parent (this instance) and its previous cibling if applicable.
+            But, because this is a Rc<RefCell<InnerNode<T>>>>, in order to write fields, we need a borrow.
+            In the other hand, once we are ready with the InnerNod configuration, we want to release the borrow.
+            What do we do? We create a scope. Because this scope ends right before the self.children.push line, the borrow, declared inside the inner scope, will be dropped.
+            Also notice that we declare the borrow with the name node, the same name of the parameter.
+            This causes the inner scope to loose access to the outer node variable, because there is a inner variable with the same name.
+            This makes sense, because the reason for the inner scope to be created is exactly to manipulate a node borrow. So, while this scope is active, there is no need to play with the pointer.
+            Once the borrow is over, we get again access to the pointer. Notice though that this shadowing, as we call it, is only enforced by the compiler. At run-time, the inner node and outer node are two different variables.
+        */
         {
             let mut node = node.borrow_mut();
             node.parent = self.address.clone();
             if let Some(last) = self.children.last() {
+                // we created here a new scope, because of the braces of the if block
+                // notice that inside this scope we are shadowing the name last, for the same reason we create the inner scope. Here, we want to manipulate a borrow of last, because we are sure the last field is Some.
                 let mut last = last.borrow_mut();
                 last.next = node.address.clone();
                 node.previous = last.address.clone();
@@ -890,14 +1132,17 @@ impl<T> InnerNode<T> {
         self.children.push(node);
     }
 
+    // gets the number of children
     fn get_num_of_children(&self) -> usize {
         self.children.len()
     }
 
+    // verifies whether this is a leaf node
     fn is_leaf(&self) -> bool {
         self.children.is_empty()
     }
 
+    // verifies whether this is a root node
     fn is_root(&self) -> bool {
         self.parent.upgrade().is_none()
     }

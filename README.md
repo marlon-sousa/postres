@@ -91,6 +91,9 @@ Go to src/main.rs, the entry point of all rust executables, and look for the 00:
 - [x] 030:     Copying and moving
 - [x] 031: pub versus pub(crate)
 - [x] 032: weak references
+- [x] 033: Data initialization
+- [x] 034: inner scopes and shadowing
+- [x] 035: dereferencing and the Deref trait
 - [ ] A little bit of devops: github actions to generate releases
 
 ## Getting started
