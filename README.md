@@ -94,6 +94,7 @@ Go to src/main.rs, the entry point of all rust executables, and look for the 00:
 - [x] 033: Data initialization
 - [x] 034: inner scopes and shadowing
 - [x] 035: dereferencing and the Deref trait
+- [x] 036: wraping up with trees
 - [ ] A little bit of devops: github actions to generate releases
 
 ## Getting started

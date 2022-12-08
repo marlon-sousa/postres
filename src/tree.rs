@@ -733,7 +733,7 @@ pub(crate) struct NodeData<'a, T> {
 
     Have you wondered how could pointers be useful by their selves?
 
-    Well, it makes no sense to hold the address of something if I can not access this something from this address. It is like having a rmote control for a tv which is in another street, we can do nothing with it.
+    Well, it makes no sense to hold the address of something if I can not access this something from this address. It is like having a remote control for a tv which is in another street, we can do nothing with it.
 
     The act of from a pointer having access to the variable it points to is called dereferencing.
 
@@ -744,7 +744,7 @@ pub(crate) struct NodeData<'a, T> {
     "what is the problem here? You are criticizing java, I love java, I will stop reading this right now, you have no idea about what you are saying, back to rust!"
     Calm down, dear reader. I have nothing to say about java. The issue comes right now:
     Based on the == operator design, we can conclude that everytime we type a name of a reference, we are looking at the reference it self, not at what it points to. This is why ref1 == ref2 will hold true only if the references are equal, if they both have the same value, value here being the address of a given object, not the object.
-    Right, we are kit sure that only by typing the name of the reference we are looking at the reference, not at what the reference points.
+    Right, we are kit sure that only by typing the name of the reference we are looking at the reference, not at what the reference points at.
     So if we want to, say, print the reference value, which would be the address of the object it points to, we can perfectly use println, right?
     Well, let's, in a rust project, have a little of java!
     ```
@@ -754,7 +754,7 @@ pub(crate) struct NodeData<'a, T> {
                 String a = new String("hello");
                 // a contains a reference for a object created on heap. Java creates all objects always on heap, a is a reference.
                 String b = new String("hello");
-                // b contains a reference for a object created on heap. Java creates all objects always on heap, a is a reference.
+                // b contains a reference for a object created on heap. Java creates all objects always on heap, b is a reference.
                 System.out.println(a == b);
                 System.out.println(a);
                 System.out.println(b);
@@ -794,7 +794,7 @@ pub(crate) struct NodeData<'a, T> {
     The c and c++ languages don't use implicit dereferencing rules.
     Because they recognize you might want to refer to both the pointer it self or to the value the pointer points to, they force you to explicitly specify what you want to do.
     Both languages use the * operator to achieve that. This operator, when placed right before a pointer name, signalizes that you want to access the value the pointer points to, not the value of the pointer. We call this operator the deref operator.
-    Also, c++ uses a shortamd operator to access fields and methods of instances of classes behind a pointer. Did you know the -> operator? Well, pointername->method is exactly the smame of (*pointername).method.
+    Also, c++ uses a shortamd operator to access fields and methods of instances of classes behind a pointer. Did you know the -> operator? Well, pointername->method is exactly the same of (*pointername).method.
     In fact, php has adopted the -> operator of c++, and it makes sense, because in php all objects are created in the heap and therefore are submited to the garbage collector.
 
     "but", you say, "this is about rust. I want to learn rust, we are here because of rust, stop talking about other languages!"
@@ -890,13 +890,13 @@ pub(crate) struct NodeData<'a, T> {
             // allocate on stack
             let with_deref = WithDeref::build(3, 4);
             // with_deref is on stack, but there is something different:
-            // Try to find the new_deref_target_method implementation on the WithoutTarget struct ... and you will see that such implementation does not exist!
-            // in fact, this implementation belongs to the NewDerefTarget struct. We can call this on a WithoutTarget instance because the Deref trait redirects calls from WithDeref to the instance of NewDerefTarget the WithDeref instance holds
+            // Try to find the new_deref_target_method implementation on the WithDeref struct ... and you will see that such implementation does not exist!
+            // in fact, this implementation belongs to the NewDerefTarget struct. We can call this on a WithDeref instance because the Deref trait redirects calls from WithDeref to the instance of NewDerefTarget the WithDeref instance holds
             with_deref.new_deref_target_method();
             // allocate on heap
             let with_deref_pointer = Box::new(WithDeref::build(5, 6));
             // with_deref_pointer is a pointer to a WithDeref struct allocated on heap.
-            // We again are showing in the line below that the deref trait implementation redirects calls from a WithoutDeref pointer to the NewDerefTarget instance it holds
+            // We again are showing in the line below that the deref trait implementation redirects calls from a WithDeref pointer to the NewDerefTarget instance it holds
             with_deref_pointer.new_deref_target_method();
             // now, because we have a pointer,we will try using the dereference operator to have direct access to the struct fields
             println!("{}", (*with_deref_pointer).i);
@@ -905,10 +905,13 @@ pub(crate) struct NodeData<'a, T> {
     ```
 
     In a sense, the Deref trait might  make some objects bheave like java, letting one unclear about what exactly happens when a method is called on a pointer.
-    Not so because deref might or not occur (it always occurs) but because you have no way of knowing who is going to be responding fpor that call.
+    Not so because deref might or not occur (it always occurs) but because you have no way of knowing who is going to be responding for that call.
     It is also very sad that if you define methods with the same name on source and target objects the source method has precedence, in a silent way.
-    This is valid even when traits are implemented on source, so that if you implement a trait on a source object that has a method with the same name of a method on the destination deref target, the source method will sart to be used silently.
-    Again, rust even being a great language has its issues.
+    This is valid even when traits are implemented on source, so that if you implement a trait on a source object that has a method with the same name of a method on the destination deref target, the source method will start to be used silently.
+    Again, rust even being a great language has its issues. The only difference here is that you can see if a given object implements the Deref trait. If it doesn't, then you know the rules.
+    Amother thing about deref is this: You can pass an instance to a function accepting a completely different type, as long as the passed type implements Deref and the Deref implementation resolves either to the expected parameter type or to a type which it self implement Deref and this Deref implementation resoles, again, either to the expected parameter type or to a struct implementing Deref ... amnd so on.
+    At compile time, the Deref chain will be followed until needed when you pass a given struct as a parameter to a function which expects a different type.
+
     In our case, we want to make the user use the NodeData as if it were a Node value.
     This is why we are redirecting calls from the NodeData to the value it contain.
     Because the value field is a Cell::Ref, we dereference it first to really get to the value, then return a reference to the value.
@@ -1147,6 +1150,31 @@ impl<T> InnerNode<T> {
         self.parent.upgrade().is_none()
     }
 }
+
+/*
+    036: wraping up with trees
+
+    If you are still reading this module, I have to congratulate you.
+    It was really hard for the writer, I can only imagine how it was for the readers!
+
+    Now, you have to know that this tree is far from perfect.
+
+    First, it uses the heap, which makes it some what slow.
+    Second, high level nodes use an inner struct, which causes operations to be delegated to yyet another place in memory.
+    Third, this access to the inner struct has to control access state, because there might be several pointers pointing to a this node.
+    Fourth, we are using several pointers pointing to other pointers, as for example the list of children of a Node.
+
+    But this tree has some cool advantages: because of the Node abstraction, the user is unlikely to find a run-time error because of multiple accesses. Borrows are ackired, the requested operation is performed and borrows are dropped all inside a higher level function, so the user has no way of directly playing with these borrows.
+    This three is also capable of inserting children some what fast, because the list of pointers to a node children is kept sequentially stored in a Vector.
+    If we chose not to use a Vec, we wouldsave some memory, but in order to insert a child we would have to walk node by node following each next field until a next == None is found, so that we know that this is the last node from where the next child should be inserted.
+    Iterating through a ist of children is easier, because again we can use the Vec implementation.
+    This tree is also not multi threaded. Although this is not a problem it could be if the use needed to be paralelized.
+    If you are asking why didn't we make the perfect tree, I have to tell you that the perfect data struct does not exist.
+    The HashMap you use in python or the ArrayList you use in java are also not perfect. Like any other data struct, they are good at some things and bad at others. Tradeofs are extremely normal in progrmaming.
+    The reason you use these objects without even thinking about them is that they are designed to fit most art of needs, but definitely not all of them.
+
+    Data structs are complex and there are many researchers who dedicate many years to come with extremely good algorithms. Usually, we make use of their work. Still, this tree is good enough for the job and allowed us to see several low level concepts.
+*/
 
 #[cfg(test)]
 mod test {
