@@ -55,6 +55,7 @@ mod error;
 mod logging;
 mod postman;
 mod restclient;
+mod tree;
 
 pub use config::Config;
 

@@ -82,7 +82,19 @@ Go to src/main.rs, the entry point of all rust executables, and look for the 00:
 - [x] 021: cargo.toml and cargo.lock
 - [x] 022: inference and the _ symbol
 - [x] 023: early return with the ? operator
-- [ ] the stack and he heap
+- [x] 024: is rust really easy or you're sheating me? (a quick reflection on programming)
+- [x] 025: trees
+- [x] 026: An abstraction example
+- [x] 027: the stack and the heap
+- [x] 028: Memory leaks and dangling pointers
+- [x] 029 - pointers, part 2
+- [x] 030:     Copying and moving
+- [x] 031: pub versus pub(crate)
+- [x] 032: weak references
+- [x] 033: Data initialization
+- [x] 034: inner scopes and shadowing
+- [x] 035: dereferencing and the Deref trait
+- [x] 036: wraping up with trees
 - [ ] A little bit of devops: github actions to generate releases
 
 ## Getting started
