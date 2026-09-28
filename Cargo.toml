@@ -1,0 +1,23 @@
+# ANCHOR: package
+[package]
+name = "postres"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Convert Postman collections into .http files for the VS Code REST Client extension."
+license = "MIT"
+repository = "https://github.com/marlon-sousa/postres"
+readme = "README.md"
+keywords = ["postman", "rest-client", "http", "converter"]
+categories = ["command-line-utilities", "development-tools"]
+# ANCHOR_END: package
+
+# ANCHOR: dependencies
+[dependencies]
+# ANCHOR_END: dependencies
+
+# ANCHOR: lints
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+# ANCHOR_END: lints

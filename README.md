@@ -6,9 +6,10 @@ extension.
 
 ## Status
 
-**Nothing works yet.** This repository was reset to an empty tree in September 2026
-and is being written again from scratch, one part at a time. This README is the
-first commit.
+**It builds, and does nothing yet.** This repository was reset to an empty tree in
+September 2026 and is being written again from scratch, one part at a time. At
+`part-04` it is a library and a binary with the shape of the converter and no
+behaviour, checked on Linux, Windows and macOS on every push.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -28,13 +29,16 @@ part, each one ending at a git tag, so you can check out exactly the code an art
 describes and run it. The series is
 **[Rust Beyond Systems Programming](https://marlon-sousa.com/series/rust-beyond-systems/)**.
 
+The first three parts are about the language itself and carry no code, so the table
+starts at the fourth.
+
 | Part | Article | Tag |
 | ---- | ------- | --- |
-| _Parts are listed here as they are published._ | | |
+| 4 | [A converter is a small compiler](https://marlon-sousa.com/blog/a-converter-is-a-small-compiler/) | [`part-04`](https://github.com/marlon-sousa/postres/tree/part-04) |
 
 ## Building it
 
-There is nothing to build yet. Once there is:
+Rust 1.85 or newer:
 
 ```sh
 git clone https://github.com/marlon-sousa/postres.git

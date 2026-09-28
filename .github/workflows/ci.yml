@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  # A broken link in the documentation fails the build like any other error.
+  RUSTDOCFLAGS: -D warnings
+
+jobs:
+  # ANCHOR: matrix
+  check:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - run: cargo doc --no-deps --locked
+  # ANCHOR_END: matrix
+
+  # ANCHOR: msrv
+  # `rust-version` in Cargo.toml is a promise. This is what keeps it.
+  msrv:
+    name: minimum supported Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@1.85
+      - run: cargo check --all-targets --locked
+  # ANCHOR_END: msrv
