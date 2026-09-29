@@ -14,6 +14,9 @@ categories = ["command-line-utilities", "development-tools"]
 
 # ANCHOR: dependencies
 [dependencies]
+# ANCHOR: clap
+clap = { version = "4.6.7", features = ["derive"] }
+# ANCHOR_END: clap
 # ANCHOR_END: dependencies
 
 # ANCHOR: lints

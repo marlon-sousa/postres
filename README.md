@@ -6,10 +6,10 @@ extension.
 
 ## Status
 
-**It builds, and does nothing yet.** This repository was reset to an empty tree in
-September 2026 and is being written again from scratch, one part at a time. At
-`part-04` it is a library and a binary with the shape of the converter and no
-behaviour, checked on Linux, Windows and macOS on every push.
+**It listens, and converts nothing yet.** This repository was reset to an empty tree
+in September 2026 and is being written again from scratch, one part at a time. At
+`part-05` it reads its command line and prints back what it understood. It does not
+read or write a file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -35,6 +35,7 @@ starts at the fourth.
 | Part | Article | Tag |
 | ---- | ------- | --- |
 | 4 | [A converter is a small compiler](https://marlon-sousa.com/blog/a-converter-is-a-small-compiler/) | [`part-04`](https://github.com/marlon-sousa/postres/tree/part-04) |
+| 5 | [Arguments, without writing a parser](https://marlon-sousa.com/blog/arguments-without-writing-a-parser/) | [`part-05`](https://github.com/marlon-sousa/postres/tree/part-05) |
 
 ## Building it
 
@@ -51,7 +52,8 @@ the final part.
 
 ## Usage
 
-This is the interface the rebuild is aiming at. None of it runs today.
+This is the interface the rebuild is aiming at. The first two commands already parse,
+and print back what they understood; none of them converts anything yet.
 
 ```sh
 # one file, named after the collection
