@@ -8,9 +8,9 @@ extension.
 
 **It listens, and converts nothing yet.** This repository was reset to an empty tree
 in September 2026 and is being written again from scratch, one part at a time. At
-`part-06` it reads its command line, works out where the output should go, and
-prints what it would do. It does not read or write a file yet. Every push is checked
-on Linux, Windows and macOS.
+`part-07` it reads its command line, works out where the output should go — with
+tests proving the name is right — and prints what it would do. It does not read or
+write a file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -38,6 +38,7 @@ starts at the fourth.
 | 4 | [A converter is a small compiler](https://marlon-sousa.com/blog/a-converter-is-a-small-compiler/) | [`part-04`](https://github.com/marlon-sousa/postres/tree/part-04) |
 | 5 | [Arguments, without writing a parser](https://marlon-sousa.com/blog/arguments-without-writing-a-parser/) | [`part-05`](https://github.com/marlon-sousa/postres/tree/part-05) |
 | 6 | [Optional for the user, not for us](https://marlon-sousa.com/blog/optional-for-the-user-not-for-us/) | [`part-06`](https://github.com/marlon-sousa/postres/tree/part-06) |
+| 7 | [Is that name right?](https://marlon-sousa.com/blog/is-that-name-right/) | [`part-07`](https://github.com/marlon-sousa/postres/tree/part-07) |
 
 ## Building it
 
