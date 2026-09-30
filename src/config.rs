@@ -35,7 +35,7 @@ impl Config {
     /// assert_eq!(config.dest_file(), Path::new("users.http"));
     /// ```
     pub fn new(source_file: PathBuf, dest_file: Option<PathBuf>) -> Self {
-        let dest_file = dest_file.unwrap_or(source_file.with_extension("http"));
+        let dest_file = dest_file.unwrap_or_else(|| source_file.with_extension("http"));
         Self {
             source_file,
             dest_file,
@@ -48,6 +48,7 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
     use std::path::Path;
 
     #[test]
@@ -56,31 +57,17 @@ mod tests {
         assert_eq!(config.dest_file(), Path::new("out/requests.http"));
     }
 
-    #[test]
-    fn only_the_last_extension_is_replaced() {
-        let config = Config::new("users.json.json".into(), None);
-        assert_eq!(config.dest_file(), Path::new("users.json.http"));
+    // ANCHOR: table
+    #[rstest]
+    #[case::only_the_last_extension_is_replaced("users.json.json", "users.json.http")]
+    #[case::a_directory_name_is_left_alone("exports.json/users.json", "exports.json/users.http")]
+    #[case::an_uppercase_extension_is_replaced("users.JSON", "users.http")]
+    #[case::any_extension_is_replaced("users.txt", "users.http")]
+    #[case::a_file_with_no_extension_gets_one("users", "users.http")]
+    fn the_default_name(#[case] source: PathBuf, #[case] expected: PathBuf) {
+        let config = Config::new(source, None);
+        assert_eq!(config.dest_file(), expected.as_path());
     }
-
-    #[test]
-    fn a_directory_name_is_left_alone() {
-        let config = Config::new("exports.json/users.json".into(), None);
-        assert_eq!(config.dest_file(), Path::new("exports.json/users.http"));
-    }
-
-    #[test]
-    fn any_extension_is_replaced_not_only_json() {
-        let config = Config::new("users.JSON".into(), None);
-        assert_eq!(config.dest_file(), Path::new("users.http"));
-
-        let config = Config::new("users.txt".into(), None);
-        assert_eq!(config.dest_file(), Path::new("users.http"));
-    }
-
-    #[test]
-    fn a_file_with_no_extension_gets_one() {
-        let config = Config::new("users".into(), None);
-        assert_eq!(config.dest_file(), Path::new("users.http"));
-    }
+    // ANCHOR_END: table
 }
 // ANCHOR_END: tests

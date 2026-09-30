@@ -27,3 +27,8 @@ getset = "0.1.7"
 unsafe_code = "forbid"
 missing_docs = "warn"
 # ANCHOR_END: lints
+
+# ANCHOR: dev-dependencies
+[dev-dependencies]
+rstest = "0.27.0"
+# ANCHOR_END: dev-dependencies

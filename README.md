@@ -8,9 +8,9 @@ extension.
 
 **It listens, and converts nothing yet.** This repository was reset to an empty tree
 in September 2026 and is being written again from scratch, one part at a time. At
-`part-07` it reads its command line, works out where the output should go — with
-tests proving the name is right — and prints what it would do. It does not read or
-write a file yet. Every push is checked on Linux, Windows and macOS.
+`part-08` it reads its command line, works out where the output should go — with a
+table of tests proving the name is right — and prints what it would do. It does not
+read or write a file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -39,6 +39,7 @@ starts at the fourth.
 | 5 | [Arguments, without writing a parser](https://marlon-sousa.com/blog/arguments-without-writing-a-parser/) | [`part-05`](https://github.com/marlon-sousa/postres/tree/part-05) |
 | 6 | [Optional for the user, not for us](https://marlon-sousa.com/blog/optional-for-the-user-not-for-us/) | [`part-06`](https://github.com/marlon-sousa/postres/tree/part-06) |
 | 7 | [Is that name right?](https://marlon-sousa.com/blog/is-that-name-right/) | [`part-07`](https://github.com/marlon-sousa/postres/tree/part-07) |
+| 8 | [Now, later, or only in tests](https://marlon-sousa.com/blog/now-later-or-only-in-tests/) | [`part-08`](https://github.com/marlon-sousa/postres/tree/part-08) |
 
 ## Building it
 
