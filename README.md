@@ -8,8 +8,9 @@ extension.
 
 **It listens, and converts nothing yet.** This repository was reset to an empty tree
 in September 2026 and is being written again from scratch, one part at a time. At
-`part-05` it reads its command line and prints back what it understood. It does not
-read or write a file yet. Every push is checked on Linux, Windows and macOS.
+`part-06` it reads its command line, works out where the output should go, and
+prints what it would do. It does not read or write a file yet. Every push is checked
+on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -36,6 +37,7 @@ starts at the fourth.
 | ---- | ------- | --- |
 | 4 | [A converter is a small compiler](https://marlon-sousa.com/blog/a-converter-is-a-small-compiler/) | [`part-04`](https://github.com/marlon-sousa/postres/tree/part-04) |
 | 5 | [Arguments, without writing a parser](https://marlon-sousa.com/blog/arguments-without-writing-a-parser/) | [`part-05`](https://github.com/marlon-sousa/postres/tree/part-05) |
+| 6 | [Optional for the user, not for us](https://marlon-sousa.com/blog/optional-for-the-user-not-for-us/) | [`part-06`](https://github.com/marlon-sousa/postres/tree/part-06) |
 
 ## Building it
 
@@ -53,7 +55,7 @@ the final part.
 ## Usage
 
 This is the interface the rebuild is aiming at. The first two commands already parse,
-and print back what they understood; none of them converts anything yet.
+and print the file they would write; none of them converts anything yet.
 
 ```sh
 # one file, named after the collection

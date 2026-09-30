@@ -3,6 +3,7 @@
 use std::path::PathBuf;
 
 use clap::Parser;
+use postres::Config;
 
 // ANCHOR: args
 // The command line, as clap parses it. `about` is the description in Cargo.toml,
@@ -23,6 +24,12 @@ struct Args {
 // ANCHOR: main
 fn main() {
     let args = Args::parse();
-    println!("{args:?}");
+    let config = Config::new(args.postman_file, args.output_file);
+
+    println!(
+        "converting {} into {}",
+        config.source_file().display(),
+        config.dest_file().display()
+    );
 }
 // ANCHOR_END: main

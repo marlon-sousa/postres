@@ -6,10 +6,14 @@
 //! describing what REST Client understands, and the second model is written out
 //! as a file. Anything that goes wrong on the way is reported by name.
 //!
-//! Nothing here is public yet. Each stage becomes visible when there is something
-//! in it worth calling.
+//! The only public item so far is [`Config`], which says what one run has been
+//! asked to do. Each stage becomes visible when there is something in it worth
+//! calling.
 
 // ANCHOR: modules
+// What one run has been asked to do.
+mod config;
+
 // Reads a Postman collection and parses it into the source model.
 mod postman;
 
@@ -22,3 +26,7 @@ mod restclient;
 // Everything that can go wrong, with a name.
 mod error;
 // ANCHOR_END: modules
+
+// ANCHOR: reexport
+pub use config::Config;
+// ANCHOR_END: reexport
