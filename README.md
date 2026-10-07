@@ -8,8 +8,8 @@ extension.
 
 **It listens, and converts nothing yet.** This repository was reset to an empty tree
 in September 2026 and is being written again from scratch, one part at a time. At
-`part-10` it reads its command line, works out where the output should go — with a
-table of tests proving the name is right — and prints what it would do; `examples/` holds two small programs about threads, locks and sharing. It does not read or write a
+`part-11` it reads its command line, works out where the output should go — with a
+table of tests proving the name is right — and says so with `-v`, through a log that never makes the program wait; `examples/` holds three small programs about threads, locks, sharing and logging. It does not read or write a
 file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
@@ -42,6 +42,7 @@ starts at the fourth.
 | 8 | [Now, later, or only in tests](https://marlon-sousa.com/blog/now-later-or-only-in-tests/) | [`part-08`](https://github.com/marlon-sousa/postres/tree/part-08) |
 | 9 | [Threads, without the assembly](https://marlon-sousa.com/blog/threads-without-the-assembly/) | [`part-09`](https://github.com/marlon-sousa/postres/tree/part-09) |
 | 10 | [Sharing the kitchen](https://marlon-sousa.com/blog/sharing-the-kitchen/) | [`part-10`](https://github.com/marlon-sousa/postres/tree/part-10) |
+| 11 | [A log that does not block](https://marlon-sousa.com/blog/a-log-that-does-not-block/) | [`part-11`](https://github.com/marlon-sousa/postres/tree/part-11) |
 
 ## Building it
 
@@ -59,7 +60,7 @@ the final part.
 ## Usage
 
 This is the interface the rebuild is aiming at. The first two commands already parse,
-and print the file they would write; none of them converts anything yet.
+and name the file they would write if you add `-v`; none of them converts anything yet.
 
 ```sh
 # one file, named after the collection

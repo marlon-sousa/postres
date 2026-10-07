@@ -3,3 +3,6 @@
 
 # rustfmt backups
 **/*.rs.bk
+
+# written by `cargo run --example flood`
+/flood.log
