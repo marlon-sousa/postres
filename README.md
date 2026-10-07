@@ -40,7 +40,7 @@ starts at the fourth.
 | 6 | [Optional for the user, not for us](https://marlon-sousa.com/blog/optional-for-the-user-not-for-us/) | [`part-06`](https://github.com/marlon-sousa/postres/tree/part-06) |
 | 7 | [Is that name right?](https://marlon-sousa.com/blog/is-that-name-right/) | [`part-07`](https://github.com/marlon-sousa/postres/tree/part-07) |
 | 8 | [Now, later, or only in tests](https://marlon-sousa.com/blog/now-later-or-only-in-tests/) | [`part-08`](https://github.com/marlon-sousa/postres/tree/part-08) |
-| 9 | [Threads, without the assembly](https://marlon-sousa.com/blog/threads-without-the-assembly/) | [`part-09`](https://github.com/marlon-sousa/postres/tree/part-09) |
+| 9 | [Threads, told in a kitchen](https://marlon-sousa.com/blog/threads-without-the-assembly/) | [`part-09`](https://github.com/marlon-sousa/postres/tree/part-09) |
 | 10 | [Sharing the kitchen](https://marlon-sousa.com/blog/sharing-the-kitchen/) | [`part-10`](https://github.com/marlon-sousa/postres/tree/part-10) |
 | 11 | [A log that does not block](https://marlon-sousa.com/blog/a-log-that-does-not-block/) | [`part-11`](https://github.com/marlon-sousa/postres/tree/part-11) |
 | 12 | [A one-character mistake](https://marlon-sousa.com/blog/a-one-character-mistake/) | [`part-12`](https://github.com/marlon-sousa/postres/tree/part-12) |
