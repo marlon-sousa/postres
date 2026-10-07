@@ -31,6 +31,10 @@ tracing-subscriber = "0.3.23"
 [lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
+
+[lints.clippy]
+# `let _ = guard` drops the guard on the spot, and the compiler suggests exactly that.
+let_underscore_must_use = "warn"
 # ANCHOR_END: lints
 
 # ANCHOR: dev-dependencies
