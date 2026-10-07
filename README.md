@@ -8,9 +8,9 @@ extension.
 
 **It listens, and converts nothing yet.** This repository was reset to an empty tree
 in September 2026 and is being written again from scratch, one part at a time. At
-`part-08` it reads its command line, works out where the output should go — with a
-table of tests proving the name is right — and prints what it would do. It does not
-read or write a file yet. Every push is checked on Linux, Windows and macOS.
+`part-09` it reads its command line, works out where the output should go — with a
+table of tests proving the name is right — and prints what it would do; `examples/potatoes.rs` shows what more threads buy, and what more cores alone do not. It does not read or write a
+file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,
@@ -40,6 +40,7 @@ starts at the fourth.
 | 6 | [Optional for the user, not for us](https://marlon-sousa.com/blog/optional-for-the-user-not-for-us/) | [`part-06`](https://github.com/marlon-sousa/postres/tree/part-06) |
 | 7 | [Is that name right?](https://marlon-sousa.com/blog/is-that-name-right/) | [`part-07`](https://github.com/marlon-sousa/postres/tree/part-07) |
 | 8 | [Now, later, or only in tests](https://marlon-sousa.com/blog/now-later-or-only-in-tests/) | [`part-08`](https://github.com/marlon-sousa/postres/tree/part-08) |
+| 9 | [Threads, without the assembly](https://marlon-sousa.com/blog/threads-without-the-assembly/) | [`part-09`](https://github.com/marlon-sousa/postres/tree/part-09) |
 
 ## Building it
 
