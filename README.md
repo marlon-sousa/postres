@@ -11,8 +11,10 @@ in September 2026 and is being written again from scratch, one part at a time. A
 `part-12` it reads its command line, works out where the output should go — with a
 table of tests proving the name is right — and says so with `-v`, through a log that never makes the program wait; `examples/` holds three small programs about threads, locks, sharing and logging. At `part-13`,
 `examples/serialization.rs` reads the sample collection in `samples/` three ways: as plain
-JSON, into types of its own, and the same types from TOML. postres itself does not read
-or write a file yet. Every push is checked on Linux, Windows and macOS.
+JSON, into types of its own, and the same types from TOML. At `part-14` postres
+itself reads a collection, through the
+[`postman_collection`](https://crates.io/crates/postman_collection) crate, and says what it
+read with `-v`. It does not write a file yet. Every push is checked on Linux, Windows and macOS.
 
 The first attempt, written in 2022, is kept as a record: the
 [`archive/2022`](https://github.com/marlon-sousa/postres/tree/archive/2022) branch,

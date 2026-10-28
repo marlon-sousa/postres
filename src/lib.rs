@@ -6,9 +6,9 @@
 //! describing what REST Client understands, and the second model is written out
 //! as a file. Anything that goes wrong on the way is reported by name.
 //!
-//! The only public item so far is [`Config`], which says what one run has been
-//! asked to do. Each stage becomes visible when there is something in it worth
-//! calling.
+//! Public so far: [`Config`], which says what one run has been asked to do, and
+//! [`read_collection`], which turns the text of an export into a [`Collection`].
+//! Each stage becomes visible when there is something in it worth calling.
 
 // ANCHOR: modules
 // What one run has been asked to do.
@@ -29,4 +29,5 @@ mod error;
 
 // ANCHOR: reexport
 pub use config::Config;
+pub use postman::{Collection, read_collection};
 // ANCHOR_END: reexport

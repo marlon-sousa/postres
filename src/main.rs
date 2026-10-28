@@ -1,10 +1,11 @@
 //! The `postres` command line.
 
+use std::fs;
 use std::io::IsTerminal;
 use std::path::PathBuf;
 
 use clap::Parser;
-use postres::Config;
+use postres::{Config, read_collection};
 use tracing::info;
 use tracing::level_filters::LevelFilter;
 use tracing_appender::non_blocking::{NonBlockingBuilder, WorkerGuard};
@@ -39,6 +40,17 @@ fn main() {
         source = %config.source_file().display(),
         dest = %config.dest_file().display(),
         "converting"
+    );
+
+    // ANCHOR: read
+    let text = fs::read_to_string(config.source_file()).expect("could not read the collection");
+    let collection = read_collection(&text);
+    // ANCHOR_END: read
+
+    info!(
+        name = %collection.info.name,
+        items = collection.item.len(),
+        "read"
     );
 }
 // ANCHOR_END: main
