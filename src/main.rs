@@ -81,14 +81,11 @@ fn init_logging(verbose: u8) -> WorkerGuard {
 /// How much to log for a given number of `-v`: warnings and errors only by
 /// default, then info, debug, and everything.
 fn level(verbose: u8) -> LevelFilter {
-    if verbose == 0 {
-        LevelFilter::WARN
-    } else if verbose == 1 {
-        LevelFilter::INFO
-    } else if verbose == 2 {
-        LevelFilter::DEBUG
-    } else {
-        LevelFilter::TRACE
+    match verbose {
+        0 => LevelFilter::WARN,
+        1 => LevelFilter::INFO,
+        2 => LevelFilter::DEBUG,
+        _ => LevelFilter::TRACE,
     }
 }
 // ANCHOR_END: level

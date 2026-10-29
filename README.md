@@ -49,6 +49,7 @@ starts at the fourth.
 | 11 | [A log that does not block](https://marlon-sousa.com/blog/a-log-that-does-not-block/) | [`part-11`](https://github.com/marlon-sousa/postres/tree/part-11) |
 | 12 | [A one-character mistake](https://marlon-sousa.com/blog/a-one-character-mistake/) | [`part-12`](https://github.com/marlon-sousa/postres/tree/part-12) |
 | 13 | [Flattening, and back](https://marlon-sousa.com/blog/flattening-and-back/) | [`part-13`](https://github.com/marlon-sousa/postres/tree/part-13) |
+| 14 | [Reading the collection](https://marlon-sousa.com/blog/reading-the-collection/) | [`part-14`](https://github.com/marlon-sousa/postres/tree/part-14) |
 
 ## Building it
 
